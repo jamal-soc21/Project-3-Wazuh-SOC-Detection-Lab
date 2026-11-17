@@ -131,3 +131,4 @@ A common anti-pattern is suppressing entire rule IDs to silence noise. This crea
 ---
 
 *Built with integrity. Validated through adversity. Operationally validated..*
+> ⚙️ **Engineering Note:** Sysmon Event ID 13 captures the registry state change. To attribute this change to a specific process and command line, a correlation rule (like ID 100104 in our `local_rules.xml`) must link EID 13 with Sysmon Event ID 1 (Process Creation) using the `ProcessGuid` field.
