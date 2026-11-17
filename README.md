@@ -38,8 +38,8 @@ All custom rules and monitoring configurations are mapped to industry standards 
 -   **Action:** Injected malicious IP-domain mapping into `%WINDIR%\System32\drivers\etc\hosts`.
 -   **Detection:** Wazuh FIM triggered a realtime alert showing the exact diff of the injected line. Post-remediation verification confirmed successful cleanup via negative diff analysis.
 -   **Evidence:**
-    - [Hosts File Modified Diff](09_Hosts_DNS_Hijack_Diff.png)
-    - [Cleanup Verification](10_Hosts_Cleanup_Diff.png)
+    - [Hosts File Modified Diff](08_FIM_Hosts_Hijack_DIFF.png)
+    - [Cleanup Verification](09_FIM_Hosts_Clean_DIFF.png)
 
 ### Scenario 2: Registry Persistence (Autostart Backdoor)
 
@@ -50,8 +50,8 @@ All custom rules and monitoring configurations are mapped to industry standards 
     -   **Sysmon EID 13:** Captured the write operation in realtime with command-line context (`reg.exe add ...`).
     -   **Custom Rule:** Elevated detection severity to Level 10 and enriched with MITRE ID T1547.001.
 -   **Evidence:**
-    - [Registry Injection Command](12_Registry_Attack_RegAdd.png)
-    - [Sysmon EID13 Detection](14_Registry_Sysmon_MITRE_T1547.png)
+    - [Registry Injection Command](11_FIM_Registry_Injection.png)
+    - [Sysmon EID13 Detection](13_Reg_Persistence_MITRE.png)
 
 ---
 
@@ -93,9 +93,9 @@ A common anti-pattern is suppressing entire rule IDs to silence noise. This crea
 ```
 
 **Evidence:**
-- [Tuning Code & Test](18_Tuning_Rule_Code_Nano.png)
-- [Suppression Success](20_Tuning_Success_Zero_Hits.png)
-- [System Integrity Check](21_Tuning_Integrity_EID7_Active.png)
+- [Tuning Code & Test](18_Tuning_Rule_Write_a.png)
+- [Suppression Success](19a_Tuning_Noise_Gone.png)
+- [System Integrity Check](19b_Tuning_Still_Detecting.png)
 
 ---
 
@@ -103,14 +103,14 @@ A common anti-pattern is suppressing entire rule IDs to silence noise. This crea
 
 | Phase | Image | Description |
 | :--- | :--- | :--- |
-| **Setup** | [00_Services_Running](00_Services_Running_Sysmon_Wazuh.png) | Dual-sensor readiness verified |
-| **Hardening** | [02_FIM_Config](02_FIM_TestDir_Config.png) | Restricted monitoring for high-value binaries |
-| **Attack** | [12_Reg_Injection](12_Registry_Attack_RegAdd.png) | Malicious registry value creation |
-| **Detection** | [13_FIM_Reg_Alert](13_Registry_FIM_Alert.png) | FIM alert with full path attribution |
-| **Hunting** | [17_Noise_Baseline](17_Tuning_Noise_Baseline.png) | Initial broad sweep showing alert fatigue |
-| **Hunting** | [15_Refined_Hunt](15_Hunting_Refined_T1547.png) | Narrowed search isolating true positive |
-| **Tuning** | [20_Suppression_OK](20_Tuning_Success_Zero_Hits.png) | Zero hits for benign signed loads |
-| **Quality** | [19_Analysisd_Test](19_Tuning_Analysisd_Test_OK.png) | Engine validation before production deploy |
+| **Setup** | [03_Services_Status](03_Services_Status.png) | Dual-sensor readiness verified |
+| **Hardening** | [01_FIM_Agent_Config](01_FIM_Agent_Config.png) | Restricted monitoring for high-value binaries |
+| **Attack** | [11_Reg_Injection](11_FIM_Registry_Injection.png) | Malicious registry value creation |
+| **Detection** | [12_FIM_Reg_Alert](12_FIM_Registry_Alert.png) | FIM alert with full path attribution |
+| **Hunting** | [17_Noise_Baseline](17_Tuning_Identify_Baseline_a.png) | Initial broad sweep showing alert fatigue |
+| **Hunting** | [15_Refined_Hunt](15_Hunting_Persistence_Refined.png) | Narrowed search isolating true positive |
+| **Tuning** | [19a_Suppression_OK](19a_Tuning_Noise_Gone.png) | Zero hits for benign signed loads |
+| **Quality** | [18b_Analysisd_Test](18_Tuning_Rule_Write_b.png) | Engine validation before production deploy |
 
 ---
 
