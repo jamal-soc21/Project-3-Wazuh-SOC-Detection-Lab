@@ -47,7 +47,7 @@ All custom rules and monitoring configurations are mapped to industry standards 
 -   **Action:** Added `WindowsUpdateService` value pointing to a fake updater binary under `HKLM\...\CurrentVersion\Run`.
 -   **Dual-Sensor Validation:**
     -   **FIM:** Detected registry key addition during scheduled scan cycle with full path attribution.
-    -   **Sysmon EID 13:** Captured the write operation in realtime with command-line context (`reg.exe add ...`).
+    -   **Sysmon EID 13: Captured the registry write operation in realtime (Command-line context requires correlation with EID 1). (`reg.exe add ...`).
     -   **Custom Rule:** Elevated detection severity to Level 10 and enriched with MITRE ID T1547.001.
 -   **Evidence:**
     - [Registry Injection Command](11_FIM_Registry_Injection.png)
@@ -62,7 +62,7 @@ Instead of passive waiting, active hunting was performed over a 24-hour window t
 1.  **Broad Sweep:** Queried `rule.mitre.tactic: Persistence` → Returned **393 hits** (High Noise Baseline).
 2.  **Refinement:** Filtered to specific technique `rule.mitre.id: T1547.001` → Reduced to **3 targeted hits**.
 3.  **IOC Extraction:** Identified malicious binary path (`C:\Windows\Temp\updater.exe`) and user context (`jamal\jamal`).
-4.  **Negative Verification:** After remediation, queried `eventType: SetValue` within an isolated absolute time range → Confirmed **0 hits**, validating eradication.
+4.  **Negative Verification:** After remediation, queried `eventType: SetValue` within an isolated absolute time range → Confirmed **0 hits**, validating remediation.
 
 > ⚠️ **Critical Lesson:** Relative time filters ("Last 5 minutes") can contaminate results if applied before service restart propagation completes. Absolute ranges anchored to precise remediation timestamps are mandatory for valid negative testing.
 
@@ -130,4 +130,4 @@ A common anti-pattern is suppressing entire rule IDs to silence noise. This crea
 
 ---
 
-*Built with integrity. Validated through adversity. Ready for production.*
+*Built with integrity. Validated through adversity. Operationally validated..*
