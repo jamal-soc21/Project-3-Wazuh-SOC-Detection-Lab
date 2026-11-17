@@ -15,6 +15,7 @@ Key achievements include simulating DNS Hijacking and Registry Persistence, hunt
 
 ### Dual-Sensor Deployment
 The environment uses two independent sensors to ensure coverage redundancy:
+
 1.  **Wazuh Agent (FIM):** Monitors file system state changes and registry keys in realtime. Configured with strict whitelisting for high-value binaries (`reg.exe`, `powershell.exe`, `cmd.exe`) and critical paths (`System32\drivers\etc`).
 2.  **Sysmon (Behavioral):** Uses the Olaf Hartong Modular configuration to provide granular process creation, image loading, and registry event logging mapped directly to MITRE ATT&CK techniques.
 
@@ -22,6 +23,7 @@ The environment uses two independent sensors to ensure coverage redundancy:
 
 ### Compliance Mapping
 All custom rules and monitoring configurations are mapped to industry standards to demonstrate business alignment:
+
 -   **NIST 800-53:** SI.7 (Software, Firmware, and Information Integrity)
 -   **PCI DSS:** Requirement 11.5 (File Integrity Monitoring)
 -   **TSC:** CC6.1, CC7.2 (Logical Access & System Operations)
@@ -31,23 +33,25 @@ All custom rules and monitoring configurations are mapped to industry standards 
 ## 🚦 Attack Scenarios & Detection Evidence
 
 ### Scenario 1: DNS Hijacking via Hosts File Modification
+
 -   **Technique:** T1565.001 (Stored Data Manipulation)
 -   **Action:** Injected malicious IP-domain mapping into `%WINDIR%\System32\drivers\etc\hosts`.
 -   **Detection:** Wazuh FIM triggered a realtime alert showing the exact diff of the injected line. Post-remediation verification confirmed successful cleanup via negative diff analysis.
--   **Evidence:** 
-    - [Hosts File Modified Diff](screenshots/13_FIM_Hosts_Modified_Diff_DNS_Hijack.png) 
-    - [Cleanup Verification](screenshots/15_FIM_Hosts_Restored_Cleanup_Success.png)
+-   **Evidence:**
+    - [Hosts File Modified Diff](09_Hosts_DNS_Hijack_Diff.png)
+    - [Cleanup Verification](10_Hosts_Cleanup_Diff.png)
 
 ### Scenario 2: Registry Persistence (Autostart Backdoor)
+
 -   **Technique:** T1547.001 (Boot/Logon Autostart Execution: Registry Run Keys)
 -   **Action:** Added `WindowsUpdateService` value pointing to a fake updater binary under `HKLM\...\CurrentVersion\Run`.
 -   **Dual-Sensor Validation:**
     -   **FIM:** Detected registry key addition during scheduled scan cycle with full path attribution.
     -   **Sysmon EID 13:** Captured the write operation in realtime with command-line context (`reg.exe add ...`).
     -   **Custom Rule:** Elevated detection severity to Level 10 and enriched with MITRE ID T1547.001.
--   **Evidence:** 
-    - [Registry Injection Command](screenshots/12_Attack_Simulation_Reg_Add_WindowsUpdateService.png) 
-    - [Sysmon EID13 Detection](screenshots/17_Hunting_Refined_T1547_001_RegKeys.png)
+-   **Evidence:**
+    - [Registry Injection Command](12_Registry_Attack_RegAdd.png)
+    - [Sysmon EID13 Detection](14_Registry_Sysmon_MITRE_T1547.png)
 
 ---
 
@@ -77,18 +81,21 @@ A common anti-pattern is suppressing entire rule IDs to silence noise. This crea
 -   **Integrity Check:** Verified that general Sysmon EID7 detection remained active (47 hits) proving the engine was not disabled, only surgically tuned.
 
 **Code Snippet (Rule 100103):**
-    <rule id="100103" level="0">
-      <if_sid>92154</if_sid>
-      <field name="data.win.eventdata.signed">^true$</field>
-      <field name="data.win.eventdata.signatureStatus">^Valid$</field>
-      <field name="data.win.eventdata.imageLoaded">taskschd\.dll$</field>
-      <description>Tuning: suppress benign Microsoft-signed taskschd.dll loads</description>
-    </rule>
 
-**Evidence:** 
-- [Tuning Code & Test](screenshots/23_Custom_Rules_XML_Code_Snippet.png) 
-- [Suppression Success](screenshots/21_Tuning_Success_Rule92154_Suppressed.png) 
-- [System Integrity Check](screenshots/24_System_Integrity_EID7_Still_Active_47Hits.png)
+```xml
+<rule id="100103" level="0">
+  <if_sid>92154</if_sid>
+  <field name="data.win.eventdata.signed">^true$</field>
+  <field name="data.win.eventdata.signatureStatus">^Valid$</field>
+  <field name="data.win.eventdata.imageLoaded">taskschd\.dll$</field>
+  <description>Tuning: suppress benign Microsoft-signed taskschd.dll loads</description>
+</rule>
+```
+
+**Evidence:**
+- [Tuning Code & Test](18_Tuning_Rule_Code_Nano.png)
+- [Suppression Success](20_Tuning_Success_Zero_Hits.png)
+- [System Integrity Check](21_Tuning_Integrity_EID7_Active.png)
 
 ---
 
@@ -96,14 +103,14 @@ A common anti-pattern is suppressing entire rule IDs to silence noise. This crea
 
 | Phase | Image | Description |
 | :--- | :--- | :--- |
-| **Setup** | [03_Services_Running](screenshots/03_Services_Running_Sysmon_Wazuh.png) | Dual-sensor readiness verified |
-| **Hardening** | [09_FIM_Config](screenshots/09_FIM_Config_Restricted_Binaries_Hardening.png) | Restricted monitoring for high-value binaries |
-| **Attack** | [12_Reg_Injection](screenshots/12_Attack_Simulation_Reg_Add_WindowsUpdateService.png) | Malicious registry value creation |
-| **Detection** | [14_FIM_Reg_Added](screenshots/14_FIM_Registry_Added_WindowsUpdateService.png) | FIM alert with full path attribution |
-| **Hunting** | [16_Noise_Baseline](screenshots/16_Hunting_Broad_Persistence_Noise_393Hits.png) | Initial broad sweep showing alert fatigue |
-| **Hunting** | [17_Refined_Hunt](screenshots/17_Hunting_Refined_T1547_001_RegKeys.png) | Narrowed search isolating true positive |
-| **Tuning** | [21_Suppression_OK](screenshots/21_Tuning_Success_Rule92154_Suppressed.png) | Zero hits for benign signed loads |
-| **Quality** | [22_Analysisd_Test](screenshots/22_Engineering_Quality_Analysisd_Test_OK.png) | Engine validation before production deploy |
+| **Setup** | [00_Services_Running](00_Services_Running_Sysmon_Wazuh.png) | Dual-sensor readiness verified |
+| **Hardening** | [02_FIM_Config](02_FIM_TestDir_Config.png) | Restricted monitoring for high-value binaries |
+| **Attack** | [12_Reg_Injection](12_Registry_Attack_RegAdd.png) | Malicious registry value creation |
+| **Detection** | [13_FIM_Reg_Alert](13_Registry_FIM_Alert.png) | FIM alert with full path attribution |
+| **Hunting** | [17_Noise_Baseline](17_Tuning_Noise_Baseline.png) | Initial broad sweep showing alert fatigue |
+| **Hunting** | [15_Refined_Hunt](15_Hunting_Refined_T1547.png) | Narrowed search isolating true positive |
+| **Tuning** | [20_Suppression_OK](20_Tuning_Success_Zero_Hits.png) | Zero hits for benign signed loads |
+| **Quality** | [19_Analysisd_Test](19_Tuning_Analysisd_Test_OK.png) | Engine validation before production deploy |
 
 ---
 
