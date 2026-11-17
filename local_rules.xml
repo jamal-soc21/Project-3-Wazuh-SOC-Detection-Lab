@@ -1,0 +1,26 @@
+<group name="local,custom_rules,">
+  <!-- Rule 100102: Elevate Registry Run Key Persistence -->
+  <rule id="100102" level="10">
+    <if_sid>752</if_sid>
+    <field name="syscheck.path">CurrentVersion\\Run</field>
+    <description>Registry Run key persistence added (autostart) - possible malware persistence</description>
+    <mitre><id>T1547.001</id></mitre>
+  </rule>
+
+  <!-- Rule 100103: Conditional Suppression for benign taskschd.dll -->
+  <rule id="100103" level="0">
+    <if_sid>92154</if_sid>
+    <field name="data.win.eventdata.signed">^true$</field>
+    <field name="data.win.eventdata.signatureStatus">^Valid$</field>
+    <field name="data.win.eventdata.imageLoaded">taskschd\.dll$</field>
+    <description>Tuning: suppress benign Microsoft-signed taskschd.dll loads (noise reduction)</description>
+  </rule>
+
+  <!-- Rule 100104: Technical Note - Correlation Context -->
+  <rule id="100104" level="12">
+    <if_sid>92302</if_sid>
+    <field name="win.eventdata.targetObject">\\Run\\</field>
+    <description>High-fidelity Registry Persistence detected via Sysmon EID 13. (Note: Full command-line attribution requires correlation with Sysmon EID 1).</description>
+    <mitre><id>T1547.001</id></mitre>
+  </rule>
+</group>
